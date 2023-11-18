@@ -26,17 +26,23 @@
   {% for book in books %}
     <div class="col">
       <div class="card mx-2 my-2 overflow-hidden" style="width: 18rem; height: 30rem;">
-        <img src="https://covers.openlibrary.org/b/isbn/0811209059-M.jpg" class="card-img-top" alt="..." height="240rem">
+        {% if request.path == '/books' %} 
+        <img src="/static/media/{{ book.cover_image }}" class="card-img-top" alt="" height="240rem" loading="lazy">        
+        {% elif request.path == '/books/import' %}
+        <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" class="card-img-top" alt="" height="240rem" loading="lazy">        
+        {% endif %}
+        <!-- <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" class="card-img-top" alt="/static/media/no-image.png" height="240rem">
+        <img src="https://covers.openlibrary.org/b/isbn/0811209059-M.jpg" class="card-img-top" alt="..." height="240rem"> -->
         <div class="card-body">
           <h5 class="card-title">{{ book.title }}</h5>
           <p class="card-subtitle mb-2 text-body-secondary">{{ book.isbn }}</p>
           <p class="card-text">By <em>{{ book.authors }}</em></p>
           <div class="container text-center">
-            <button class="btn btn-outline-primary mx-2">View</button>
             {% if request.path == '/books' %} 
+              <button class="btn btn-outline-primary mx-2">View</button>
               <button class="btn btn-primary mx-2">Issue</button>
             {% elif request.path == '/books/import' %}
-            <button class="btn btn-primary mx-2">Import</button>
+              <button class="btn btn-primary" style="width: 75%;" onclick="importBook('{{ book.isbn }}')">Import</button>
             {% endif %}
           </div>
         </div>
@@ -44,5 +50,69 @@
     </div>
   {% endfor %}
 </div>
+<script>
+  books = {{ books | safe}}
 
+  function importBook(isbn) {
+    console.log(isbn)
+    let book = null;
+    for(let i=0; i<books.length; i++) {
+      if(books[i].isbn === isbn) {
+        book = books[i];
+        // console.log(i, books[i])
+        break;
+      }
+    }
+    console.log(book)
+    if(book === null) return;
+
+    let form_import = document.createElement("form");
+    form_import.id = `form_import_${book.isbn}`;
+    form_import.method = "POST"
+    form_import.action = "/books/new"
+
+    let ele_title = document.createElement("input");
+    ele_title.type = "hidden";
+    ele_title.name = "title";
+    ele_title.value = book.title;
+    form_import.appendChild(ele_title);
+    
+    let ele_isbn = document.createElement("input");
+    ele_isbn.type = "hidden";
+    ele_isbn.name = "isbn";
+    ele_isbn.value = book.isbn;
+    form_import.appendChild(ele_isbn);
+    
+    let ele_authors = document.createElement("input");
+    ele_authors.type = "hidden";
+    ele_authors.name = "authors";
+    ele_authors.value = book.authors;
+    form_import.appendChild(ele_authors);
+    
+    let ele_publisher = document.createElement("input");
+    ele_publisher.type = "hidden";
+    ele_publisher.name = "publisher";
+    ele_publisher.value = book.publisher;
+    form_import.appendChild(ele_publisher);
+    
+    let ele_num_pages = document.createElement("input");
+    ele_num_pages.type = "hidden";
+    ele_num_pages.name = "num_pages";
+    ele_num_pages.value = 0;
+    form_import.appendChild(ele_num_pages);
+
+    let ele_total_copies = document.createElement("input");
+    ele_total_copies.type = "hidden";
+    ele_total_copies.name = "total_copies";
+    ele_total_copies.value = 1;
+    form_import.appendChild(ele_total_copies);
+    
+    console.log(form_import)    
+    
+    document.body.appendChild(form_import);
+    form_import.submit();
+    return;
+  }
+
+</script>
 {% endblock %}

@@ -1,16 +1,13 @@
-from flask import jsonify, make_response, request, flash, render_template
+from flask import jsonify, make_response, request, flash, render_template, redirect
 from sqlalchemy.exc import IntegrityError
 
 from models import Book
 from app import app, db
 from frappe_lib import frappe_client
 
-print("books", app)
-# @app.get("/books")
-@app.route("/books", methods=["GET"])
+@app.get("/books")
+# @app.route("/books", methods=["GET"])
 def get_books():
-    # print("gg")
-    # return "books"
     try:
         books = Book.query.limit(8)
         return render_template("books/get.html", books=books)
@@ -30,16 +27,20 @@ def add_book():
         authors = request.form["authors"]
         isbn = request.form["isbn"]
         publisher = request.form["publisher"]
-        num_pages = int(request.form["num_pages"])
-        total_copies = int(request.form["total_copies"])
+        num_pages = request.form["num_pages"]
+        total_copies = request.form["total_copies"]
         cover_image = request.files.get("cover_image", None)
+        print(title, authors, isbn, publisher, num_pages, total_copies)
         if not title or not authors or not isbn or not publisher or not num_pages or not total_copies:
             # flash("All fields are required", "danger")
             # return render_template("books/new.html")
             return make_response(jsonify({"message": "Fields missing"}), 404)
-        
+        if num_pages == '':
+            num_pages = 0
+        if total_copies == '':
+            total_copies = 1
         if cover_image is None:
-            cover_image = frappe_client.get_img_from_isbn(isbn)
+            frappe_client.get_img_from_isbn(app.config['UPLOAD_FOLDER'], isbn)
         
         filename = isbn
         book = Book(
@@ -57,18 +58,23 @@ def add_book():
         db.session.commit()
     except IntegrityError:
         print(book, "already exists")
+        # flash("Book already exists", "warning")
+        # return make_response(jsonify({"message": "already exists"}), 404)
     except Exception as e:
         print(e)
-    
-
-    pass
-
+        return make_response(jsonify({"message": e}), 500)
+    finally:
+        return redirect("/books")
 
 @app.get("/books/import")
 def import_books():
+    query = dict()
+    query_key = request.args.get("key")
+    q = request.args.get("query")
+    if query_key and q:
+        query.setdefault(query_key, q)
     try:
-        books = frappe_client.get_books()
-        # print(books)
+        books = frappe_client.get_books(query=query)
         return render_template("books/get.html", books=books)
         
     except Exception as e:

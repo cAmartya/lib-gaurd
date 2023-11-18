@@ -1,4 +1,5 @@
-import requests
+import requests, os
+# from app import app
 
 class FrappeLib:
     def __init__(self) -> None:
@@ -24,10 +25,16 @@ class FrappeLib:
             print("can't get books from frappe", e)
             return[]
         
-    def get_img_from_isbn(self, isbn: str) -> str:
-        if isbn == "https://avatars.githubusercontent.com/u/80196675?v=4":
-            return
-        return f"{self.open_lib_url}/{isbn}-M.jpg"
+    def get_img_from_isbn(self, directory:str, isbn: str) -> None:
+        res = requests.get(f"{self.open_lib_url}/{isbn}-M.jpg")
+        if res.status_code == 200:
+            # with open(os.path.join(app.config["UPLOAD_FOLDER"], isbn), 'wb') as f:
+            #     f.write(res.content)
+            with open(os.path.join(directory, isbn), 'wb') as f:
+                f.write(res.content)
+        # else:
+        #     with open(os.path.join(directory, isbn), 'wb') as f:
+        #         f.write()
 
 frappe_client=FrappeLib()
 

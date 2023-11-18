@@ -8,6 +8,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"]=os.getenv("DB_URI")
+app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static/media")
 
 db = SQLAlchemy()
 db.init_app(app)
