@@ -1,4 +1,4 @@
-from app import db
+from app import db, app
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -36,6 +36,9 @@ class Book(db.Model):
     def __repr__(self):
         return f"<Book {self.id}>"
 
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     db.create_all()
