@@ -48,9 +48,6 @@
   </div>
 </div>
 
-
-
-
 <!-- card deck -->
 <div class="row row-cols-4 my-2">
   {% for book in books %}
@@ -83,6 +80,8 @@
 </div>
 <script>
 
+  var books = JSON.parse(`{{ books | tojson | safe }}`)
+
   function deleteBook(idx) {
     let book = books[idx];
     console.log(idx, book.id);
@@ -98,6 +97,13 @@
 
   }
 
+  function editBook(idx) {
+    let book = books[idx];
+    console.log(idx, book.id);
+    if(book === null || book === undefined) return;
+    window.location.href = `/books/${book.id}`
+  }
+
   function viewBook(idx) {
     let book = books[idx];
     console.log(book);
@@ -105,6 +111,7 @@
     $("#view-modal-image").children().remove();
     $("#view-modal-content").children().remove();
     $("#delete-book").off("click");
+    $("#edit-book").off("click");
 
     $("#view-modal-image").append(`<img src="/static/media/${book.cover_image}" alt="" width=80%/>`);
 
@@ -117,12 +124,12 @@
     $("#view-modal-content").append(`<p> Available copies: ${book.available_copies} </p>`);
 
     $("#delete-book").on("click", function() { deleteBook(idx) });
+    $("#edit-book").on("click", function() { editBook(idx) });
 
     $("#viewmodal").modal("show");
   }
 
   $(document).ready(function() {
-    books = JSON.parse(`{{ books | tojson | safe }}`)
     $("#viewmodal").modal({"show": false});
 
     if( "{{ request.path }}" === "/books" ) {

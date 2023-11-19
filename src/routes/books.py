@@ -27,8 +27,10 @@ def get_books():
         return make_response(jsonify({"message": "Internal srver error"}), 500)
 
 
-@app.post("/books/new")
+@app.route("/books/new", methods=["GET", "POST"])
 def add_book():
+    if request.method == "GET":
+        return render_template("books/new.html")
     try:
         title = request.form["title"]
         authors = request.form["authors"]
@@ -89,10 +91,10 @@ def import_books():
         return make_response(jsonify({"message": "Internal srver error"}), 500)
     pass
 
-@app.route("/books/<int:id>", methods=["GET", "PUT", "DELETE"])
+@app.route("/books/<int:id>", methods=["GET", "POST", "DELETE"])
 def show_book(id):
     print(id)
-    if request.method == "PUT":
+    if request.method == "POST":
         book = Book.query.get(id)
         book.title = request.form["title"]
         book.authors = request.form["authors"]
@@ -100,9 +102,12 @@ def show_book(id):
         book.publisher = request.form["publisher"]
         book.num_pages = request.form["num_pages"]
         book.total_copies = request.form["total_copies"]
-        book.cover_image = request.files.get("cover_image", None)
+        new_cover_image = request.files.get("cover_image", None)
+        if new_cover_image:
+            book.cover_image = new_cover_image
         db.session.commit()
-        return make_response(jsonify({"message": book}))
+        return redirect("/books")
+        # return make_response(jsonify({"message": book}))
         return render_template("books/get.html")
     elif request.method == "DELETE":
         book = Book.query.get(id)
@@ -112,3 +117,6 @@ def show_book(id):
         
         # return redirect("/books")
         return make_response(jsonify({"message": "success"}))
+    elif request.method == "GET":
+        book = Book.query.get(id)
+        return render_template("books/new.html", book=book)

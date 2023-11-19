@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form class="container text-center w-75" id="add-edit-book" action="{{ request.path }}" method="post">
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="title" id="title" {% if book %} value="{{book.title}}" {% endif %}>
+    <label for="title">Title</label>
+  </div>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="isbn" id="isbn" {% if book %} value="{{book.isbn}}" {% endif %}>
+    <label for="isbn">ISBN</label>
+  </div>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="authors" id="authors" {% if book %} value="{{book.authors}}" {% endif %}>
+    <label for="authors">Authors</label>
+  </div>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="publisher" id="publisher" {% if book %} value="{{book.publisher}}" {% endif %}>
+    <label for="publisher">Publisher</label>
+    <!-- placeholder="Authors of the book, seperated by '/'" -->
+  </div>
+  <div class="form-floating mb-3">
+    <input type="number" class="form-control" name="num_pages" id="num_pages" {% if book %} value="{{book.num_pages}}" {% endif %}>
+    <label for="num_pages">Total Pages</label>
+  </div>
+  <div class="form-floating mb-3">
+    <input type="number" class="form-control" name="total_copies" id="total_copies" {% if book %} value="{{book.total_copies}}" {% endif %}>
+    <label for="total_copies">Total Copies</label>
+  </div>
+  <div class="input-group mb-3">
+    <input type="file" class="form-control" name="cover_image" id="cover_image">
+  </div>
+
+  <button id="submit-book" type="submit" class="btn btn-primary w-25">Submit</button>
+</form>
+
+<script>
+  // $(document).ready(function() {
+  //   console.log("{{ request.path }}")
+  //   add_edit_form = document.getElementById("add-edit-book");
+  //   if("{{ request.path }}" == "/books/new") {
+  //     add_edit_form.method = "POST";
+  //   } else {
+  //     add_edit_form.method = "PUT";
+  //   }
+  //   // $("#submit-book").on("click", )
+  // })
+</script>
+
+{% endblock %}
+
