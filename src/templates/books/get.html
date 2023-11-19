@@ -20,9 +20,39 @@
   </div>
 </form>
 
+<div class="modal fade" id="viewmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <div class="modal-body">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="container mt-2">
+          <div class="row">
+            <div class="col-sm-8" id="view-modal-image">
+              <!-- Book cover -->
+            </div>
+            <div class="col-sm-4 align-self-center" id="view-modal-content"> 
+              <!-- Book details -->
+            </div>          
+          </div>  
+        </div>      
+      </div>
+
+      <div class="modal-footer" id="view-modal-footer">
+        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" id="delete-book">Delete</button>
+        <!-- <button type="button" class="btn btn-outline-danger" id="delete-book">Delete</button> -->
+        <button type="button" class="btn btn-primary" id="edit-book">Edit</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
 
 <!-- card deck -->
-<div class="row row-cols-4">
+<div class="row row-cols-4 my-2">
   {% for book in books %}
     <div class="col">
       <div class="card mx-2 my-2 overflow-hidden" style="width: 18rem; height: 30rem;">
@@ -39,10 +69,11 @@
           <p class="card-text">By <em>{{ book.authors }}</em></p>
           <div class="container text-center">
             {% if request.path == '/books' %} 
-              <button class="btn btn-outline-primary mx-2">View</button>
+              <button class="btn btn-outline-primary mx-2" id="viewbook-{{ loop.index-1 }}"> View </button>
               <button class="btn btn-primary mx-2">Issue</button>
             {% elif request.path == '/books/import' %}
-              <button class="btn btn-primary" style="width: 75%;" onclick="importBook('{{ book.isbn }}')">Import</button>
+              <!-- <button class="btn btn-primary" style="width: 75%;" onclick="viewBook('{{ book.isbn }}')">Import</button> -->
+              <button class="btn btn-primary" style="width: 75%;" id="importbook-{{ loop.index-1 }}" >Import</button>
             {% endif %}
           </div>
         </div>
@@ -51,20 +82,65 @@
   {% endfor %}
 </div>
 <script>
-  books = {{ books | safe}}
 
-  function importBook(isbn) {
-    console.log(isbn)
-    let book = null;
-    for(let i=0; i<books.length; i++) {
-      if(books[i].isbn === isbn) {
-        book = books[i];
-        // console.log(i, books[i])
-        break;
+  function deleteBook(idx) {
+    let book = books[idx];
+    console.log(idx, book.id);
+    if(book === null || book === undefined) return;
+    books.splice(idx, 1);
+    fetch(`/books/${book.id}`, {
+      method: "DELETE"
+    }).then((res) => {
+      if(res.status === 200) {
+        window.location.href = "/books"
+      }
+    });
+
+  }
+
+  function viewBook(idx) {
+    let book = books[idx];
+    console.log(book);
+
+    $("#view-modal-image").children().remove();
+    $("#view-modal-content").children().remove();
+    $("#delete-book").off("click");
+
+    $("#view-modal-image").append(`<img src="/static/media/${book.cover_image}" alt="" width=80%/>`);
+
+    $("#view-modal-content").append(`<h5> ${book.title} </h5>`);
+    $("#view-modal-content").append(`<p> ISBN: ${book.isbn} </p>`);
+    $("#view-modal-content").append(`<p> Publisher: ${book.publisher} </p>`);
+    $("#view-modal-content").append(`<p> Authors: ${book.authors} </p>`);
+    $("#view-modal-content").append(`<p> Pages: ${book.num_pages} </p>`);
+    $("#view-modal-content").append(`<p> Total copies: ${book.total_copies} </p>`);
+    $("#view-modal-content").append(`<p> Available copies: ${book.available_copies} </p>`);
+
+    $("#delete-book").on("click", function() { deleteBook(idx) });
+
+    $("#viewmodal").modal("show");
+  }
+
+  $(document).ready(function() {
+    books = JSON.parse(`{{ books | tojson | safe }}`)
+    $("#viewmodal").modal({"show": false});
+
+    if( "{{ request.path }}" === "/books" ) {
+      console.log("path", "{{ request.path }}");
+      for(let i=0; i<books.length; i++) {
+        $(`#viewbook-${i}`).on("click", function() { viewBook(i) });
+      }
+    } else if( "{{ request.path }}" === "/books/import" ) {
+      for(let i=0; i<books.length; i++) {
+        $(`#importbook-${i}`).on("click", function() { importBook(i) });
       }
     }
-    console.log(book)
-    if(book === null) return;
+  });
+
+
+  function importBook(idx) {
+    let book = books[idx];
+    if(book === null || book == undefined) return;
 
     let form_import = document.createElement("form");
     form_import.id = `form_import_${book.isbn}`;
@@ -106,9 +182,7 @@
     ele_total_copies.name = "total_copies";
     ele_total_copies.value = 1;
     form_import.appendChild(ele_total_copies);
-    
-    console.log(form_import)    
-    
+        
     document.body.appendChild(form_import);
     form_import.submit();
     return;
@@ -116,3 +190,4 @@
 
 </script>
 {% endblock %}
+

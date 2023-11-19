@@ -6,18 +6,25 @@ from app import app, db
 from frappe_lib import frappe_client
 
 @app.get("/books")
-# @app.route("/books", methods=["GET"])
+# @app.route("/books", methods=["GET", "DELETE"])
 def get_books():
     try:
         books = Book.query.limit(8)
+        books = [{
+                    "id": book.id, 
+                    "title": book.title, 
+                    "isbn": book.isbn, 
+                    "authors": book.authors, 
+                    "publisher": book.publisher,
+                    "num_pages": book.num_pages,
+                    "total_copies": book.total_copies,
+                    "available_copies": book.available_copies,
+                    "cover_image": book.cover_image
+                } for book in books]
         return render_template("books/get.html", books=books)
     except Exception as e:
         print(e)
         return make_response(jsonify({"message": "Internal srver error"}), 500)
-
-
-# def add_book(isbn, title, authors, publisher, num_pages, total_copies, cover):
-#     pass
 
 
 @app.post("/books/new")
@@ -82,8 +89,26 @@ def import_books():
         return make_response(jsonify({"message": "Internal srver error"}), 500)
     pass
 
-@app.route("/books/<int:id>", methods=["GET"])
+@app.route("/books/<int:id>", methods=["GET", "PUT", "DELETE"])
 def show_book(id):
     print(id)
-    book = Book.query.get(id)
-    return f":{id}"
+    if request.method == "PUT":
+        book = Book.query.get(id)
+        book.title = request.form["title"]
+        book.authors = request.form["authors"]
+        book.isbn = request.form["isbn"]
+        book.publisher = request.form["publisher"]
+        book.num_pages = request.form["num_pages"]
+        book.total_copies = request.form["total_copies"]
+        book.cover_image = request.files.get("cover_image", None)
+        db.session.commit()
+        return make_response(jsonify({"message": book}))
+        return render_template("books/get.html")
+    elif request.method == "DELETE":
+        book = Book.query.get(id)
+        db.session.delete(book)
+        db.session.commit()
+        print(id, book)
+        
+        # return redirect("/books")
+        return make_response(jsonify({"message": "success"}))
