@@ -2,7 +2,7 @@
 {% block content %}
 
 <form class="container" method="get">
-  <div class="row mb-4">
+  <div class="row mb-2">
     <div class="form-group col-md-2">
       <select name="key" class="form-select rounded-pill border-primary">
         <option value="title" selected>Title</option>
@@ -20,6 +20,15 @@
   </div>
 </form>
 
+{% if request.path == '/books' %}
+  <div class="container text-center mb-4">
+    <a href="/books/new" class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"> Add new book record </a>
+    &nbsp OR &nbsp
+    <a href="/books/import" class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"> Import book record from Frappe </a>
+  </div>
+{% endif %}
+
+<!-- Book details Modal -->
 <div class="modal fade" id="viewmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -43,7 +52,25 @@
         <!-- <button type="button" class="btn btn-outline-danger" id="delete-book">Delete</button> -->
         <button type="button" class="btn btn-primary" id="edit-book">Edit</button>
       </div>
+    </div>
+  </div>
+</div>
 
+<!-- Modal for number of copies -->
+<div class="modal" id="total-copies-modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Number of copies to import</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="number" class="form-control" name="total_copies" id="total-copies-input">    
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="total-copies-submit" >Save changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -58,8 +85,6 @@
         {% elif request.path == '/books/import' %}
         <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" class="card-img-top" alt="" height="240rem" loading="lazy">        
         {% endif %}
-        <!-- <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg" class="card-img-top" alt="/static/media/no-image.png" height="240rem">
-        <img src="https://covers.openlibrary.org/b/isbn/0811209059-M.jpg" class="card-img-top" alt="..." height="240rem"> -->
         <div class="card-body">
           <h5 class="card-title">{{ book.title }}</h5>
           <p class="card-subtitle mb-2 text-body-secondary">{{ book.isbn }}</p>
@@ -69,8 +94,7 @@
               <button class="btn btn-outline-primary mx-2" id="viewbook-{{ loop.index-1 }}"> View </button>
               <button class="btn btn-primary mx-2">Issue</button>
             {% elif request.path == '/books/import' %}
-              <!-- <button class="btn btn-primary" style="width: 75%;" onclick="viewBook('{{ book.isbn }}')">Import</button> -->
-              <button class="btn btn-primary" style="width: 75%;" id="importbook-{{ loop.index-1 }}" >Import</button>
+              <button class="btn btn-primary w-75" id="importbook-{{ loop.index-1 }}" >Import</button>
             {% endif %}
           </div>
         </div>
@@ -79,6 +103,7 @@
   {% endfor %}
 </div>
 
+<!-- Pagination -->
 <nav aria-label="Page navigation example">
   <ul class="pagination">
     <li class="page-item">
@@ -96,11 +121,11 @@
 
 <script>
 
-  var books = JSON.parse(`{{ books | tojson | safe }}`)
+  var books = JSON.parse(`{{ books | tojson | safe }}`);
+  let book = null;
 
   function deleteBook(idx) {
-    let book = books[idx];
-    console.log(idx, book.id);
+    book = books[idx];
     if(book === null || book === undefined) return;
     books.splice(idx, 1);
     fetch(`/books/${book.id}`, {
@@ -111,18 +136,17 @@
       }
     });
 
+    book = null;
   }
 
   function editBook(idx) {
-    let book = books[idx];
-    console.log(idx, book.id);
+    book = books[idx];
     if(book === null || book === undefined) return;
     window.location.href = `/books/${book.id}`
   }
 
   function viewBook(idx) {
-    let book = books[idx];
-    console.log(book);
+    book = books[idx];
 
     $("#view-modal-image").children().remove();
     $("#view-modal-content").children().remove();
@@ -147,6 +171,7 @@
 
   $(document).ready(function() {
     $("#viewmodal").modal({"show": false});
+    $("#total-copies-modal").modal({"show": false});
 
     if( "{{ request.path }}" === "/books" ) {
       console.log("path", "{{ request.path }}");
@@ -154,17 +179,22 @@
         $(`#viewbook-${i}`).on("click", function() { viewBook(i) });
       }
     } else if( "{{ request.path }}" === "/books/import" ) {
+      $(`#total-copies-submit`).on("click", function() { importBookSubmit() });
       for(let i=0; i<books.length; i++) {
         $(`#importbook-${i}`).on("click", function() { importBook(i) });
       }
     }
   });
 
-
   function importBook(idx) {
-    let book = books[idx];
-    if(book === null || book == undefined) return;
+    book = books[idx];
+    if(book === null || book === undefined) return;
 
+    $("#total-copies-modal").modal("show");
+  }
+
+  function importBookSubmit() {
+    $("#total-copies-modal").modal("hide");
     let form_import = document.createElement("form");
     form_import.id = `form_import_${book.isbn}`;
     form_import.method = "POST"
@@ -197,13 +227,14 @@
     let ele_num_pages = document.createElement("input");
     ele_num_pages.type = "hidden";
     ele_num_pages.name = "num_pages";
-    ele_num_pages.value = 0;
+    ele_num_pages.value = book['  num_pages'];
     form_import.appendChild(ele_num_pages);
 
     let ele_total_copies = document.createElement("input");
     ele_total_copies.type = "hidden";
     ele_total_copies.name = "total_copies";
-    ele_total_copies.value = 1;
+    ele_total_copies.value = $("#total-copies-input").val();
+    // ele_total_copies.value = 1;
     form_import.appendChild(ele_total_copies);
         
     document.body.appendChild(form_import);
@@ -213,5 +244,3 @@
 
 </script>
 {% endblock %}
-
-<!-- {{ url_for(endpoint='import_books', page=page+1, values=request.args.to_dict()) }} -->
