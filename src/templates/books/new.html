@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<form class="container text-center w-75" id="add-edit-book" action="{{ request.path }}" method="post">
+<form class="container text-center w-75" id="add-edit-book" action="{{ request.path }}" method="post" enctype="multipart/form-data">
   <div class="form-floating mb-3">
     <input type="text" class="form-control" name="title" id="title" {% if book %} value="{{book.title}}" {% endif %}>
     <label for="title">Title</label>

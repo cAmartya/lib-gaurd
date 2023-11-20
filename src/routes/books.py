@@ -1,3 +1,4 @@
+import os
 from flask import jsonify, make_response, request, flash, render_template, redirect
 from sqlalchemy.exc import IntegrityError
 
@@ -39,6 +40,7 @@ def add_book():
         num_pages = request.form["num_pages"]
         total_copies = request.form["total_copies"]
         cover_image = request.files.get("cover_image", None)
+        # cover_image = request.files["cover_image"]
         print(title, authors, isbn, publisher, num_pages, total_copies)
         if not title or not authors or not isbn or not publisher or not num_pages or not total_copies:
             # flash("All fields are required", "danger")
@@ -48,8 +50,11 @@ def add_book():
             num_pages = 0
         if total_copies == '':
             total_copies = 1
+        print(cover_image, type(cover_image))
         if cover_image is None:
             frappe_client.get_img_from_isbn(app.config['UPLOAD_FOLDER'], isbn)
+        else:
+            cover_image.save(os.path.join(app.config['UPLOAD_FOLDER'], isbn))
         
         filename = isbn
         book = Book(
@@ -104,7 +109,7 @@ def show_book(id):
         book.total_copies = request.form["total_copies"]
         new_cover_image = request.files.get("cover_image", None)
         if new_cover_image:
-            book.cover_image = new_cover_image
+            new_cover_image.save(os.path.join(app.config['UPLOAD_FOLDER'], book.cover_image))
         db.session.commit()
         return redirect("/books")
         # return make_response(jsonify({"message": book}))
