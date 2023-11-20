@@ -12,8 +12,8 @@ class FrappeLib:
     #     pass
 
     def get_books(self, query:dict=dict(), page:int=1)-> []:
-        if "page" not in query.keys():
-            query["page"] = page
+        # if "page" not in query.keys():
+        #     query["page"] = page
         print(query)
         try:
             res = requests.get(self.frappe_url, params=query)

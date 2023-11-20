@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlencode
 from flask import jsonify, make_response, request, flash, render_template, redirect
 from sqlalchemy.exc import IntegrityError
 
@@ -9,8 +10,24 @@ from frappe_lib import frappe_client
 @app.get("/books")
 # @app.route("/books", methods=["GET", "DELETE"])
 def get_books():
+    query_key = request.args.get("key")
+    q = request.args.get("query")
+    page = request.args.get("page", None)
+    if page is None:
+        page = 1
+    page = int(page)
+    print("books page", page, type(page))
     try:
-        books = Book.query.limit(8)
+        if query_key == "title":
+            books = Book.query.filter(Book.title.like("%{}%".format(q))).offset((page-1)*8).limit(8)
+        elif query_key == "authors":
+            books = Book.query.filter(Book.authors.like("%{}%".format(q))).offset((page-1)*8).limit(8)
+        elif query_key == "isbn":
+            books = Book.query.filter(Book.isbn.like("%{}%".format(q))).offset((page-1)*8).limit(8)
+        elif query_key == "publisher":
+            books = Book.query.filter(Book.publisher.like("%{}%".format(q))).offset((page-1)*8).limit(8)
+        else:
+            books = Book.query.offset((page-1)*8).limit(8)
         books = [{
                     "id": book.id, 
                     "title": book.title, 
@@ -22,7 +39,10 @@ def get_books():
                     "available_copies": book.available_copies,
                     "cover_image": book.cover_image
                 } for book in books]
-        return render_template("books/get.html", books=books)
+        query_str=""
+        if query_key and q:
+            query_str = urlencode({'key':query_key, 'query':q})
+        return render_template("books/get.html", books=books, page=page, query_str=query_str)
     except Exception as e:
         print(e)
         return make_response(jsonify({"message": "Internal srver error"}), 500)
@@ -80,16 +100,26 @@ def add_book():
     finally:
         return redirect("/books")
 
-@app.get("/books/import")
+# @app.get("/books/import")
+@app.route("/books/import", methods=["GET"])
 def import_books():
     query = dict()
     query_key = request.args.get("key")
     q = request.args.get("query")
     if query_key and q:
         query.setdefault(query_key, q)
+    page = request.args.get("page", None)
+    if page is None:
+        page = 1
+    page = int(page)
+    query.setdefault("page", page)
+    print("import page", page, type(page))
     try:
         books = frappe_client.get_books(query=query)
-        return render_template("books/get.html", books=books)
+        query_str=""
+        if query_key and q:
+            query_str = urlencode({'key':query_key, 'query':q})
+        return render_template("books/get.html", books=books, page=page, query_str=query_str)
         
     except Exception as e:
         print(e)
