@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form class="container text-center w-75" id="add-edit-member" action="{{ request.path }}" method="post" enctype="multipart/form-data">
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="name" id="name" {% if member %} value="{{member.name}}" {% endif %}>
+    <label for="name">Name</label>
+  </div>
+  
+  <div class="form-floating mb-3">
+    <input type="email" class="form-control" name="email" id="email" {% if member %} value="{{member.email}}" {% endif %}>
+    <label for="email">Email</label>
+  </div>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="phone" id="phone" {% if member %} value="{{member.phone}}" {% endif %}>
+    <label for="phone">Phone</label>
+  </div>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" name="address" id="address" {% if member %} value="{{member.address}}" {% endif %}>
+    <label for="address">Address</label>
+    <!-- placeholder="Authors of the member, seperated by '/'" -->
+  </div>
+
+  <button id="submit-member" type="submit" class="btn btn-primary w-25">Submit</button>
+</form>
+
+{% endblock %}
+
