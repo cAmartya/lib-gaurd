@@ -20,10 +20,9 @@ def ping():
     return render_template("books/get.html")
     return "server is live"
 
-@app.get("/members")
-def members():
-    return render_template("base.html")
-    return "members"
+# @app.get("/members")
+# def members():
+#     return render_template("members/show.html")
 
 @app.get("/transactions")
 def transactions():
@@ -31,19 +30,10 @@ def transactions():
     return "transactions"
 
 from routes.books import *
+# from routes.members import *
 
-# @app.get("/books")
-# def books():    
-#     req=dict()
-#     # for key in request.args.keys():
-#     #     if request.args.get(key):
-#     #         query.setdefault(key, request.args.get(key)) 
-#     query_key = request.args.get("key")
-#     query = request.args.get("query")
-#     req.setdefault(query_key, query)
-#     if "page" in req:
-#         req["page"] = int(req["page"])
-#     return frappe_client.get_books(req)
+# import routes.books
+# import routes.members
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))

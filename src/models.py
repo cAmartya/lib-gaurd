@@ -11,18 +11,7 @@ class Book(db.Model):
     available_copies = db.Column(db.Integer, nullable=False)
     cover_image = db.Column(db.String(100), nullable=False)
 
-    def __init__(
-        self,
-        id,
-        isbn,
-        title,
-        authors,
-        publisher,
-        num_pages,
-        total_copies,
-        available_copies,
-        cover_image,
-    ):
+    def __init__(self, id, isbn, title, authors, publisher, num_pages, total_copies, available_copies, cover_image):
         self.id = id
         self.isbn = isbn
         self.title = title
@@ -35,6 +24,32 @@ class Book(db.Model):
 
     def __repr__(self):
         return f"<Book {self.id}>"
+
+class Member(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(60), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+
+    def __init__(self, id, name, address, phone, email):
+        self.id = id
+        self.name = name
+        self.address = address
+        self.phone = phone
+        self.email = email
+
+    def __repr__(self):
+        return f"<Member {self.id}>"
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "phone": self.phone,
+            "email": self.email,
+        }
 
 
 with app.app_context():
