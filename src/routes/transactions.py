@@ -40,7 +40,21 @@ def issue_transaction():
   finally:
   #   return make_response(jsonify(transaction))
     return redirect("/transactions")
-  
+
+@app.get("/transactions/return/<int:id>")
+def return_transaction(id):  
+  try:
+    transaction = Transaction.query.get(id)
+    if(Transaction.return_book(transaction)):
+      return redirect("/transactions")
+      return make_response(jsonify({"message": "book returned"}))
+    else:
+      return make_response(jsonify({"message": "book return failed"}))
+
+  except Exception as e:
+    print(e)
+    return make_response(jsonify({"message": "Internal srver error"}), 500)
+
 @app.delete("/transactions/<int:id>")
 def del_transaction(id):
   try:

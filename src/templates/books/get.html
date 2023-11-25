@@ -215,6 +215,10 @@
 
     if( "{{ request.path }}" === "/books" ) {
       console.log("path", "{{ request.path }}");
+      let options = $("#issue-member");
+      $.each(members, function() {
+          options.append(new Option(this.name, this.id));
+      });
       for(let i=0; i<books.length; i++) {
         $(`#view-book-${i}`).on("click", function() { viewBook(i) });
         $(`#issue-book-${i}`).on("click", function() { issueBook(i) });
@@ -232,10 +236,6 @@
     console.log(book);
     $("#issue-book-id").val(book.id);
     document.getElementById("issue-date").valueAsDate = new Date();
-    let options = $("#issue-member");
-    $.each(members, function() {
-        options.append(new Option(this.name, this.id));
-    });
     $("#issue-book-modal").modal("show");
 
   }
