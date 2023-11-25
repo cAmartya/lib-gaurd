@@ -9,20 +9,18 @@ from app import app
 @app.get("/")
 def ping():
     return redirect("/books")
-    return render_template("books/get.html")
-    return "server is live"
 
 # @app.get("/members")
 # def members():
 #     return render_template("members/show.html")
 
-@app.get("/transactions")
-def transactions():
-    return render_template("base.html")
-    return "transactions"
+# @app.get("/transactions")
+# def transactions():
+#     return render_template("base.html")
 
 from routes.books import *
 from routes.members import *
+from routes.transactions import *
 
 # import routes.books
 # import routes.members

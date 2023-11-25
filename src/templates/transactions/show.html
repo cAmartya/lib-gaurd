@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-2 w-75">
+  <!-- <div class="mt-2 mb-4 text-end">
+    <a type="button" href="/transactions/new" class="btn btn-outline-primary mx-4">New Member</a>
+  </div> -->
+  <table id="transactions-table" class="display nowrap w-100">
+    <thead>
+        <tr>
+            <th>Book ID</th>
+            <th>Member</th>
+            <th>Count</th>
+            <th>Issue Date</th>
+            <th>Return Date</th>
+        </tr>
+    </thead>
+    <!-- <tfoot>
+      <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Address</th>
+          <th>Action</th>
+      </tr>
+    </tfoot> -->
+  </table>      
+</div>
+
+<script>
+  let transactions = JSON.parse(`{{ transactions | tojson | safe }}`);
+  // function deleteTransaction(id) {
+  //   // let member = transactions[idx];
+  //   // if(member === null || member === undefined) return;
+  //   // transactions.splice(idx, 1);
+  //   fetch(`/transactions/${id}`, {
+  //     method: "DELETE"
+  //   }).then((res) => {
+  //     if(res.status === 200) {
+  //       window.location.href = "/transactions"
+  //     }
+  //   });
+  // }
+  $(document).ready(function() {
+    $('#transactions-table').DataTable( {
+        data: transactions,
+        columns: [
+          { data: 'book_id' },
+          { data: 'member_name' },
+          { data: 'count' },
+          { data: 'issue_date',
+            render: function(data, type) {
+              const d = new Date(data).toDateString().split(" ");
+              return `${d[0]}, ${d[1]} ${d[2]}, ${d[3]}`;
+            }
+          },
+          { data: 'return_date',
+            render: function(data, type) {
+              if(data === null || data === undefined) return "---";
+              return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
+            }
+          }
+        ]
+    } );
+
+    // for (let idx = 0; idx < transactions.length; idx++) {
+    //   const id = transactions[idx].id;
+    //   $(`#del-member-${id}`).on("click", function() { deleteMember(id) });      
+    // }
+  })
+    
+
+</script>
+{% endblock %}

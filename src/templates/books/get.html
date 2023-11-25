@@ -29,7 +29,7 @@
 {% endif %}
 
 <!-- Book details Modal -->
-<div class="modal fade" id="viewmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<div class="modal fade" id="view-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
 
@@ -75,6 +75,39 @@
   </div>
 </div>
 
+<!-- Modal for book issue -->
+<div class="modal" id="issue-book-modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Issue Book</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/transactions/issue" method="post" id="issue-book-form" class="container text-center">
+          <div class="form-floating mb-2">
+            <input type="number" class="form-control mb-2" name="book_id" id="issue-book-id" hidden>    
+            <label for="issue-book">Book ID</label>
+          </div>
+          <div class="form-floating mb-2">
+            <input type="date" class="form-control mb-2" name="issue_date" id="issue-date" hidden>       
+            <label for="issue-date">Issue Date</label>
+          </div>  
+          <div class="form-floating mb-2">
+            <input type="number" class="form-control mb-2" name="count" id="issue-book-count" value="1">        
+            <label for="issue-book-count">Number of Copies</label>
+          </div>  
+          <select class="form-select mb-4" name="member_id" id="issue-member" aria-label="Member select">
+            <option selected>Select Members</option>
+          </select>
+
+          <button id="submit-book" type="submit" class="btn btn-primary w-25">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- card deck -->
 <div class="row row-cols-4 my-2">
   {% for book in books %}
@@ -91,10 +124,10 @@
           <p class="card-text">By <em>{{ book.authors }}</em></p>
           <div class="container text-center">
             {% if request.path == '/books' %} 
-              <button class="btn btn-outline-primary mx-2" id="viewbook-{{ loop.index-1 }}"> View </button>
-              <button class="btn btn-primary mx-2">Issue</button>
+              <button class="btn btn-outline-primary mx-2" id="view-book-{{ loop.index-1 }}"> View </button>
+              <button class="btn btn-primary mx-2" id="issue-book-{{ loop.index-1 }}">Issue</button>
             {% elif request.path == '/books/import' %}
-              <button class="btn btn-primary w-75" id="importbook-{{ loop.index-1 }}" >Import</button>
+              <button class="btn btn-primary w-75" id="import-book-{{ loop.index-1 }}" >Import</button>
             {% endif %}
           </div>
         </div>
@@ -126,7 +159,8 @@
 
 <script>
 
-  var books = JSON.parse(`{{ books | tojson | safe }}`);
+  let books = JSON.parse(`{{ books | tojson | safe }}`);
+  const members = JSON.parse(`{{ members | tojson | safe }}`);
   let book = null;
 
   function deleteBook(idx) {
@@ -171,25 +205,40 @@
     $("#delete-book").on("click", function() { deleteBook(idx) });
     $("#edit-book").on("click", function() { editBook(idx) });
 
-    $("#viewmodal").modal("show");
+    $("#view-modal").modal("show");
   }
 
   $(document).ready(function() {
-    $("#viewmodal").modal({"show": false});
+    $("#view-modal").modal({"show": false});
     $("#total-copies-modal").modal({"show": false});
+    $("#issue-book-modal").modal({"show": false});
 
     if( "{{ request.path }}" === "/books" ) {
       console.log("path", "{{ request.path }}");
       for(let i=0; i<books.length; i++) {
-        $(`#viewbook-${i}`).on("click", function() { viewBook(i) });
+        $(`#view-book-${i}`).on("click", function() { viewBook(i) });
+        $(`#issue-book-${i}`).on("click", function() { issueBook(i) });
       }
     } else if( "{{ request.path }}" === "/books/import" ) {
       $(`#total-copies-submit`).on("click", function() { importBookSubmit() });
       for(let i=0; i<books.length; i++) {
-        $(`#importbook-${i}`).on("click", function() { importBook(i) });
+        $(`#import-book-${i}`).on("click", function() { importBook(i) });
       }
     }
   });
+
+  function issueBook(idx) {
+    book = books[idx];
+    console.log(book);
+    $("#issue-book-id").val(book.id);
+    document.getElementById("issue-date").valueAsDate = new Date();
+    let options = $("#issue-member");
+    $.each(members, function() {
+        options.append(new Option(this.name, this.id));
+    });
+    $("#issue-book-modal").modal("show");
+
+  }
 
   function importBook(idx) {
     book = books[idx];

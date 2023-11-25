@@ -9,8 +9,7 @@ from app import app, db
 @app.get("/members")
 def get_members():
   try:
-    res = Member.query.all()
-    members = [Member.to_json(ele) for ele in res]
+    members = [Member.to_json(member) for member in Member.query.all()]
     return render_template("members/show.html", members=members)
   except Exception as e:
     print(e)

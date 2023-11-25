@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from flask import jsonify, make_response, request, flash, render_template, redirect
 from sqlalchemy.exc import IntegrityError
 
-from models import Book
+from models import Book, Member
 from app import app, db
 from frappe_lib import frappe_client
 
@@ -28,21 +28,12 @@ def get_books():
             books = Book.query.filter(Book.publisher.like("%{}%".format(q))).offset((page-1)*8).limit(8)
         else:
             books = Book.query.offset((page-1)*8).limit(8)
-        books = [{
-                    "id": book.id, 
-                    "title": book.title, 
-                    "isbn": book.isbn, 
-                    "authors": book.authors, 
-                    "publisher": book.publisher,
-                    "num_pages": book.num_pages,
-                    "total_copies": book.total_copies,
-                    "available_copies": book.available_copies,
-                    "cover_image": book.cover_image
-                } for book in books]
+        books = [Book.to_json(book) for book in books]
         query_str=""
         if query_key and q:
             query_str = urlencode({'key':query_key, 'query':q})
-        return render_template("books/get.html", books=books, page=page, query_str=query_str)
+        members = [Member.to_json(ele) for ele in Member.query.all()]
+        return render_template("books/get.html", books=books, page=page, query_str=query_str, members=members)
     except Exception as e:
         print(e)
         return make_response(jsonify({"message": "Internal srver error"}), 500)
@@ -113,13 +104,13 @@ def import_books():
         page = 1
     page = int(page)
     query.setdefault("page", page)
-    print("import page", page, type(page))
+    print("import page", page, type(page), query)
     try:
         books = frappe_client.get_books(query=query)
         query_str=""
         if query_key and q:
             query_str = urlencode({'key':query_key, 'query':q})
-        return render_template("books/get.html", books=books, page=page, query_str=query_str)
+        return render_template("books/get.html", books=books, page=page, query_str=query_str, members=[])
         
     except Exception as e:
         print(e)
