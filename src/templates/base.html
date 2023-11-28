@@ -9,33 +9,8 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />  
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
   </head>
-  <body>
+  <body class="">
 
-    <nav class="navbar navbar-expand-lg navbar-light my-3 container">
-      <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="/books">Lib-Gaurd</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-          <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/books' %} active {% endif %}" aria-current="page" href="/books">Books</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/members' %} active {% endif %}" href="/members">Members</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/transactions' %} active {% endif %}" href="/transactions">Transactions</a>
-            </li>
-          </ul>
-
-          <button class="btn btn-outline-dark fw-bold" type="submit">LogOut</button>
-        </div>
-      </div>
-    </nav>
-    
     <div class="container">
     {% block content %}{% endblock %}
     </div>    

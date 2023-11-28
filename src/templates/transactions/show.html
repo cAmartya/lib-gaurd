@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% include 'nav.html' %}
 
 <div class="container my-2 w-75">
   <table id="transactions-table" class="display nowrap w-100">
@@ -37,7 +38,12 @@
           { data: 'book_id' },
           { data: 'member_name' },
           { data: 'count' },
-          { data: 'charges_paid' },
+          { data: 'charges_paid',
+            render: function (data, type) {
+              const val = data.toFixed(2);
+              return type === "display" ? `Rs ${val}` : val;
+            }
+          },
           { data: 'issue_date',
             render: function(data, type) {
               const date = new Date(data).toDateString().split(" ");

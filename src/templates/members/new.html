@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% include 'nav.html' %}
 
 <form class="container text-center w-75" id="add-edit-member" action="{{ request.path }}" method="post" enctype="multipart/form-data">
   <div class="form-floating mb-3">

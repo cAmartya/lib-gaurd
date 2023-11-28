@@ -18,6 +18,7 @@ def ping():
 # def transactions():
 #     return render_template("base.html")
 
+from routes.auth import *
 from routes.books import *
 from routes.members import *
 from routes.transactions import *

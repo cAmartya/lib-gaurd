@@ -1,5 +1,30 @@
+import bcrypt
+
 from app import db, app
 from datetime import datetime
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+
+    def __init__(self, id, name, username, password):
+        self.id = id
+        self.name = name
+        self.username = username
+        self.password = password
+
+    def __repr__(self):
+        return f"<User {self.username}>"
+
+    def set_password(self, password):
+        self.password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    def verify_password(self, password):
+        return bcrypt.checkpw(password.encode("utf-8"), self.password.encode("utf-8"))
+
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -12,7 +37,6 @@ class Book(db.Model):
     available_copies = db.Column(db.Integer, nullable=False)
     cover_image = db.Column(db.String(100), nullable=False)
     transactions = db.relationship("Transaction", backref="book", cascade="all, delete")
-
 
     def __init__(self, id, isbn, title, authors, publisher, num_pages, total_copies, available_copies, cover_image):
         self.id = id
@@ -41,6 +65,7 @@ class Book(db.Model):
             "cover_image": self.cover_image
         }
 
+
 class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(60), nullable=False)
@@ -48,7 +73,6 @@ class Member(db.Model):
     phone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     transactions = db.relationship("Transaction", backref="member", cascade="all, delete")
-
 
     def __init__(self, id, name, address, phone, email):
         self.id = id
@@ -69,6 +93,7 @@ class Member(db.Model):
             "email": self.email,
         }
 
+
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(db.Integer, db.ForeignKey("member.id"), nullable=False)
@@ -78,7 +103,6 @@ class Transaction(db.Model):
     is_returned = db.Column(db.Boolean, nullable=False, default=False)
     return_date = db.Column(db.Date, nullable=True)
     charges_paid = db.Column(db.Float, nullable=True, default=0)
-
 
     def __init__(self, id, member_id, book_id, count, issue_date, return_date, charges_paid=0, is_returned=False):
         self.id = id
@@ -114,7 +138,7 @@ class Transaction(db.Model):
         days = (datetime.now().date() - self.issue_date).days
 
         # Total charges = Rent charges + Fine charges
-        charges = (min(days, app.config["BOOK_RETURN_DEADLINE"]) * app.config["RENT_PER_DAY"] * self.count) 
+        charges = (min(days, app.config["BOOK_RETURN_DEADLINE"]) * app.config["RENT_PER_DAY"] * self.count)
         + (max(days - app.config["BOOK_RETURN_DEADLINE"], 0) * app.config["FINE_PER_DAY"] * self.count)
 
         return charges
@@ -133,7 +157,6 @@ class Transaction(db.Model):
         except Exception as e:
             print(e)
             return False
-
 
 
 with app.app_context():
