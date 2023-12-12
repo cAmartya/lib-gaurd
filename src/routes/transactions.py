@@ -1,11 +1,13 @@
 import os
 from urllib.parse import urlencode
+
+import jwt
 from flask import jsonify, make_response, request, flash, render_template, redirect
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
-from models import Transaction
+from models import Transaction, User
 from app import app, db
-from middlewares import auth_required
+from middlewares import auth_required, verify_jwt
 
 @app.route("/transactions", methods=["GET", "POST"])
 @auth_required
@@ -17,7 +19,7 @@ def get_transactions():
     return render_template("transactions/show.html", transactions=transactions)
   except Exception as e:
     print(e)
-    return make_response(jsonify({"message": "Internal srver error"}), 500)
+    return make_response(jsonify({"message": "Internal server error"}), 500)
 
 @app.post("/transactions/issue")
 @auth_required
@@ -29,10 +31,16 @@ def issue_transaction():
     count = request.form["count"]
     issue_date = request.form["issue_date"]
 
+    jwt_token = request.cookies.get("token")
+    user_id = verify_jwt(jwt_token)
+    user = User.query.get(user_id)
+    print("user", user_id, user.name)
+
     print(member_id, book_id, count, issue_date)
+    # return make_response(jsonify({"message": "OK"}), 200)
     if not member_id or not book_id or not count or not issue_date:
       return make_response(jsonify({"message": "Missing Fields"}), 500)
-    transaction = Transaction(id=None, member_id=member_id, book_id=book_id, count=count, issue_date=issue_date, return_date=None) 
+    transaction = Transaction(id=None, member_id=member_id, book_id=book_id, count=count, issue_date=issue_date, return_date=None, issued_by=user.name)
     db.session.add(transaction)
     db.session.commit()
   except IntegrityError:

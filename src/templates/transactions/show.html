@@ -11,8 +11,8 @@
           <th>Count</th>
           <th>Charges</th>
           <th>Issue Date</th>
+          <th>Issued By</th>
           <th>Return Date</th>
-          <!-- <th>Issued By</th> -->
       </tr>
     </thead>
     <tfoot>
@@ -22,8 +22,8 @@
           <th>Count</th>
           <th>Charges</th>
           <th>Issue Date</th>
+          <th>Issued By</th>
           <th>Return Date</th>
-          <!-- <th>Issued By</th> -->
       </tr>
     </tfoot>
   </table>      
@@ -50,6 +50,7 @@
               return `${date[0]}, ${date[1]} ${date[2]}, ${date[3]}`;
             }
           },
+          { data: 'issued_by' },
           { data: 'return_date',
             render: function(data, type, full) {
               if(data === null || data === undefined) return type === "display" ? `<a href="/transactions/return/${full.id}" class="btn btn-outline-primary">RETURN</a>` : data;

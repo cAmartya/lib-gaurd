@@ -19,6 +19,13 @@ class User(db.Model):
     def __repr__(self):
         return f"<User {self.username}>"
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "username": self.username,
+        }
+
     def set_password(self, password):
         self.password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -103,8 +110,9 @@ class Transaction(db.Model):
     is_returned = db.Column(db.Boolean, nullable=False, default=False)
     return_date = db.Column(db.Date, nullable=True)
     charges_paid = db.Column(db.Float, nullable=True, default=0)
+    issued_by = db.Column(db.String(60), nullable=False)
 
-    def __init__(self, id, member_id, book_id, count, issue_date, return_date, charges_paid=0, is_returned=False):
+    def __init__(self, id, member_id, book_id, count, issue_date, return_date, issued_by, charges_paid=0, is_returned=False):
         self.id = id
         self.member_id = member_id
         self.book_id = book_id
@@ -113,6 +121,7 @@ class Transaction(db.Model):
         self.return_date = return_date
         self.is_returned = is_returned
         self.charges_paid = charges_paid
+        self.issued_by = issued_by
 
     def __repr__(self):
         return f"<Transaction {self.id}>"
@@ -128,6 +137,7 @@ class Transaction(db.Model):
             "return_date": self.return_date,
             "is_returned": self.is_returned,
             "charges_paid": self.charges_paid,
+            "issued_by": self.issued_by,
         }
 
     def calculate_charges(self):
