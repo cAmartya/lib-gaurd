@@ -19,7 +19,10 @@
             </li>
           </ul>
 
-          <button class="btn btn-outline-dark fw-bold" type="submit">LogOut</button>
+          <a class="btn btn-outline-dark fw-bold" href="/logout">LogOut</a>
         </div>
       </div>
     </nav>
+
+{# to retrieve token from cookies #}
+{# ("; "+document.cookie).split("; token=")[1] #}

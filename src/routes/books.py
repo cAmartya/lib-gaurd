@@ -6,9 +6,11 @@ from sqlalchemy.exc import IntegrityError
 from models import Book, Member
 from app import app, db
 from frappe_lib import frappe_client
+from middlewares import auth_required
 
 @app.get("/books")
 # @app.route("/books", methods=["GET", "DELETE"])
+@auth_required
 def get_books():
     query_key = request.args.get("key")
     q = request.args.get("query")
@@ -40,6 +42,7 @@ def get_books():
 
 
 @app.route("/books/new", methods=["GET", "POST"])
+@auth_required
 def add_book():
     if request.method == "GET":
         return render_template("books/new.html")
@@ -82,7 +85,7 @@ def add_book():
         db.session.add(book)
         db.session.commit()
     except IntegrityError:
-        print(book, "already exists")
+        print("Book already exists")
         # flash("Book already exists", "warning")
         # return make_response(jsonify({"message": "already exists"}), 404)
     except Exception as e:
@@ -93,6 +96,7 @@ def add_book():
 
 # @app.get("/books/import")
 @app.route("/books/import", methods=["GET"])
+@auth_required
 def import_books():
     query = dict()
     query_key = request.args.get("key")
@@ -118,6 +122,7 @@ def import_books():
     pass
 
 @app.route("/books/<int:id>", methods=["GET", "POST", "DELETE"])
+@auth_required
 def show_book(id):
     print(id)
     if request.method == "POST":

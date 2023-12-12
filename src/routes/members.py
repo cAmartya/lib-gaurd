@@ -5,8 +5,10 @@ from sqlalchemy.exc import IntegrityError
 
 from models import Member
 from app import app, db
+from middlewares import auth_required
 
 @app.get("/members")
+@auth_required
 def get_members():
   try:
     members = [Member.to_json(member) for member in Member.query.all()]
@@ -16,6 +18,7 @@ def get_members():
     return make_response(jsonify({"message": "Internal srver error"}), 500)
   
 @app.route("/members/new", methods=["GET", "POST"])
+@auth_required
 def add_member():
   if request.method == "GET":
     return render_template("members/new.html")
@@ -39,6 +42,7 @@ def add_member():
     return redirect("/members")
 
 @app.route("/members/<int:id>", methods=["GET", "POST", "DELETE"])
+@auth_required
 def get_member(id):
   try:
     member = Member.query.get(id)

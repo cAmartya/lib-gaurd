@@ -5,8 +5,10 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from models import Transaction
 from app import app, db
+from middlewares import auth_required
 
 @app.route("/transactions", methods=["GET", "POST"])
+@auth_required
 def get_transactions():
   try:
     transactions = [Transaction.to_json(transaction) for transaction in Transaction.query.all()]
@@ -18,6 +20,7 @@ def get_transactions():
     return make_response(jsonify({"message": "Internal srver error"}), 500)
 
 @app.post("/transactions/issue")
+@auth_required
 def issue_transaction():
   print("post transaction")
   try:
@@ -42,6 +45,7 @@ def issue_transaction():
     return redirect("/transactions")
 
 @app.get("/transactions/return/<int:id>")
+@auth_required
 def return_transaction(id):  
   try:
     transaction = Transaction.query.get(id)
@@ -56,6 +60,7 @@ def return_transaction(id):
     return make_response(jsonify({"message": "Internal srver error"}), 500)
 
 @app.delete("/transactions/<int:id>")
+@auth_required
 def del_transaction(id):
   try:
     transaction = Transaction.query.get(id)
