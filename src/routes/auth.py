@@ -8,7 +8,7 @@ from models import User
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        return render_template("auth.html", msg=None)
+        return render_template("auth.html", msg="")
 
     username = request.form.get("username")
     password = request.form.get("password")

@@ -38,10 +38,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         <div class="container mt-2">
           <div class="row">
-            <div class="col-sm-8" id="view-modal-image">
+            <div class="col-sm-6" id="view-modal-image">
               <!-- Book cover -->
             </div>
-            <div class="col-sm-4 align-self-center" id="view-modal-content"> 
+            <div class="col-sm-6 align-self-center" id="view-modal-content">
               <!-- Book details -->
             </div>          
           </div>  
@@ -172,7 +172,21 @@
       method: "DELETE"
     }).then((res) => {
       if(res.status === 200) {
-        window.location.href = "/books"
+        swal.fire({
+          title: "Success",
+          text: "Book has been removed!",
+          icon: "success"
+        }).then(() => {
+            window.location.href = "/books";
+        });
+      } else {
+        swal.fire({
+          title: "Error",
+          text: "Internal Server Error!",
+          icon: "error"
+        }).then(() => {
+            window.location.href = "/books";
+        });
       }
     });
 
@@ -195,13 +209,13 @@
 
     $("#view-modal-image").append(`<img src="/static/media/${book.cover_image}" alt="" width=80%/>`);
 
-    $("#view-modal-content").append(`<h5> ${book.title} </h5>`);
-    $("#view-modal-content").append(`<p> ISBN: ${book.isbn} </p>`);
-    $("#view-modal-content").append(`<p> Publisher: ${book.publisher} </p>`);
-    $("#view-modal-content").append(`<p> Authors: ${book.authors} </p>`);
-    $("#view-modal-content").append(`<p> Pages: ${book.num_pages} </p>`);
-    $("#view-modal-content").append(`<p> Total copies: ${book.total_copies} </p>`);
-    $("#view-modal-content").append(`<p> Available copies: ${book.available_copies} </p>`);
+    $("#view-modal-content").append(`<h4 class="mb-3 text-decoration-underline"> ${book.title} </h4>`);
+    $("#view-modal-content").append(`<p> <span class="fw-medium"">ISBN</span>: <em>${book.isbn}</em> </p>`);
+    $("#view-modal-content").append(`<p> <span class="fw-medium"">Publisher:</span> <em>${book.publisher}</em> </p>`);
+    $("#view-modal-content").append(`<p> <span class="fw-medium"">Authors:</span> <em>${book.authors}</em> </p>`);
+    $("#view-modal-content").append(`<p> <span class="fw-medium"">Pages:</span> <em>${book.num_pages}</em> </p>`);
+    $("#view-modal-content").append(`<p> <span class="fw-medium"">Total copies:</span> <em>${book.total_copies}</em> </p>`);
+    $("#view-modal-content").append(`<p> <span class="fw-medium"">Available copies:</span> <em>${book.available_copies}</em> </p>`);
 
     $("#delete-book").on("click", function() { deleteBook(idx) });
     $("#edit-book").on("click", function() { editBook(idx) });

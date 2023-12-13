@@ -54,7 +54,21 @@
       method: "DELETE"
     }).then((res) => {
       if(res.status === 200) {
-        window.location.href = "/members"
+        swal.fire({
+          title: "Success",
+          text: "Member has been removed!",
+          icon: "success"
+        }).then(() => {
+            window.location.href = "/members";
+        });
+      } else {
+        swal.fire({
+          title: "Error",
+          text: "Internal Server Error!",
+          icon: "error"
+        }).then(() => {
+            window.location.href = "/members";
+        });
       }
     });
   }
