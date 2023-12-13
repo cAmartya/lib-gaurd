@@ -41,15 +41,19 @@ def issue_transaction():
     if not member_id or not book_id or not count or not issue_date:
       return make_response(jsonify({"message": "Missing Fields"}), 500)
     transaction = Transaction(id=None, member_id=member_id, book_id=book_id, count=count, issue_date=issue_date, return_date=None, issued_by=user.name)
-    db.session.add(transaction)
-    db.session.commit()
+
+    if Transaction.issue_book(transaction):
+      db.session.add(transaction)
+      db.session.commit()
+      flash("Book Issued", "success")
+    else:
+      flash("Number of copies of book to be issued exceeds available count", "warning")
   except IntegrityError:
-    print("transaction already exists")
+    flash("Transaction already exists", "warning")
   except Exception as e:
     print(e)
     return make_response(jsonify({"message": "Internal srver error"}), 500)
   finally:
-  #   return make_response(jsonify(transaction))
     return redirect("/transactions")
 
 @app.get("/transactions/return/<int:id>")
@@ -57,9 +61,9 @@ def issue_transaction():
 def return_transaction(id):  
   try:
     transaction = Transaction.query.get(id)
-    if(Transaction.return_book(transaction)):
+    if Transaction.return_book(transaction):
+      flash("Book succesfully returned", "success")
       return redirect("/transactions")
-      return make_response(jsonify({"message": "book returned"}))
     else:
       return make_response(jsonify({"message": "book return failed"}))
 

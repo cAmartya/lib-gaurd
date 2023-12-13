@@ -13,6 +13,8 @@ app.config["BOOK_RETURN_DEADLINE"] = 10
 app.config["RENT_PER_DAY"] = 0.1
 app.config["FINE_PER_DAY"] = 1
 
+# app secret key
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 db = SQLAlchemy()
 db.init_app(app)

@@ -148,10 +148,22 @@ class Transaction(db.Model):
         days = (datetime.now().date() - self.issue_date).days
 
         # Total charges = Rent charges + Fine charges
-        charges = (min(days, app.config["BOOK_RETURN_DEADLINE"]) * app.config["RENT_PER_DAY"] * self.count)
-        + (max(days - app.config["BOOK_RETURN_DEADLINE"], 0) * app.config["FINE_PER_DAY"] * self.count)
+        charges = (min(days, app.config["BOOK_RETURN_DEADLINE"]) * app.config["RENT_PER_DAY"] * int(self.count))
+        + (max(days - app.config["BOOK_RETURN_DEADLINE"], 0) * app.config["FINE_PER_DAY"] * int(self.count))
 
         return charges
+
+    def issue_book(self) -> bool:
+        try:
+            book = Book.query.get(self.book_id)
+            if book.available_copies >= int(self.count):
+                book.available_copies -= int(self.count)
+                db.session.commit()
+                return True
+            return False
+        except Exception as e:
+            print(e)
+            return False
 
     def return_book(self) -> bool:
         try:
@@ -160,7 +172,7 @@ class Transaction(db.Model):
             self.return_date = datetime.now().date()
             self.charges_paid = self.calculate_charges()
             book = Book.query.get(self.book_id)
-            book.available_copies += self.count
+            book.available_copies += int(self.count)
             self.is_returned = True
             db.session.commit()
             return True

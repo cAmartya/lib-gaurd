@@ -1,6 +1,6 @@
 import os
 from urllib.parse import urlencode
-from flask import jsonify, make_response, request, flash, render_template, redirect
+from flask import jsonify, make_response, request, render_template, redirect, flash
 from sqlalchemy.exc import IntegrityError
 
 from models import Book, Member
@@ -35,10 +35,10 @@ def get_books():
         if query_key and q:
             query_str = urlencode({'key':query_key, 'query':q})
         members = [Member.to_json(ele) for ele in Member.query.all()]
-        return render_template("books/get.html", books=books, page=page, query_str=query_str, members=members)
+        return render_template("books/show.html", books=books, page=page, query_str=query_str, members=members)
     except Exception as e:
         print(e)
-        return make_response(jsonify({"message": "Internal srver error"}), 500)
+        return make_response(jsonify({"message": "Internal server error"}), 500)
 
 
 @app.route("/books/new", methods=["GET", "POST"])
@@ -57,9 +57,8 @@ def add_book():
         # cover_image = request.files["cover_image"]
         print(title, authors, isbn, publisher, num_pages, total_copies)
         if not title or not authors or not isbn or not publisher or not num_pages or not total_copies:
-            # flash("All fields are required", "danger")
-            # return render_template("books/new.html")
-            return make_response(jsonify({"message": "Fields missing"}), 404)
+            # return make_response(jsonify({"message": "Fields missing"}), 404)
+            return render_template("books/new.html")
         if num_pages == '':
             num_pages = 0
         if total_copies == '':
@@ -84,13 +83,13 @@ def add_book():
         )
         db.session.add(book)
         db.session.commit()
+        flash("Book added successfully", "success")
     except IntegrityError:
-        print("Book already exists")
-        # flash("Book already exists", "warning")
+        flash("Book already exists", "warning")
         # return make_response(jsonify({"message": "already exists"}), 404)
     except Exception as e:
         print(e)
-        return make_response(jsonify({"message": e}), 500)
+        return make_response(jsonify({"message": "Internal server error"}), 500)
     finally:
         return redirect("/books")
 
@@ -114,7 +113,7 @@ def import_books():
         query_str=""
         if query_key and q:
             query_str = urlencode({'key':query_key, 'query':q})
-        return render_template("books/get.html", books=books, page=page, query_str=query_str, members=[])
+        return render_template("books/show.html", books=books, page=page, query_str=query_str, members=[])
         
     except Exception as e:
         print(e)
@@ -139,7 +138,7 @@ def show_book(id):
         db.session.commit()
         return redirect("/books")
         # return make_response(jsonify({"message": book}))
-        return render_template("books/get.html")
+        return render_template("books/show.html")
     elif request.method == "DELETE":
         book = Book.query.get(id)
         db.session.delete(book)

@@ -33,11 +33,12 @@ def add_member():
     member = Member(id=None, name=name, email=email, phone=phone, address=address)
     db.session.add(member)
     db.session.commit()
+    flash("Member added successfully", "success")
   except IntegrityError:
-    print("member already exists")
+    flash("Member already exists", "warning")
   except Exception as e:
     print(e)
-    return make_response(jsonify({"message": "Internal srver error"}), 500)
+    return make_response(jsonify({"message": "Internal server error"}), 500)
   finally:
     return redirect("/members")
 
@@ -56,7 +57,8 @@ def get_member(id):
       member.email = request.form["email"]
       member.phone = request.form["phone"]
       member.address = request.form["address"]
-      db.session.commit()        
+      db.session.commit()
+      flash("Member updated successfully", "success")
       return redirect("/members")
     elif request.method == "DELETE":
       db.session.delete(member)
@@ -65,7 +67,7 @@ def get_member(id):
       
   except Exception as e:
     print(e)
-    return make_response(jsonify({"message": "Internal srver error"}), 500)
+    return make_response(jsonify({"message": "Internal server error"}), 500)
 
   pass
 

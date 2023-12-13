@@ -4,32 +4,32 @@
 
 <form class="container text-center w-75" id="add-edit-book" action="{{ request.path }}" method="post" enctype="multipart/form-data">
   <div class="form-floating mb-3">
-    <input type="text" class="form-control" name="title" id="title" {% if book %} value="{{book.title}}" {% endif %}>
+    <input type="text" class="form-control" name="title" id="title" {% if book %} value="{{book.title}}" {% endif %} required>
     <label for="title">Title</label>
   </div>
   <div class="form-floating mb-3">
-    <input type="text" class="form-control" name="isbn" id="isbn" {% if book %} value="{{book.isbn}}" {% endif %}>
+    <input type="text" class="form-control" name="isbn" id="isbn" {% if book %} value="{{book.isbn}}" {% endif %} required>
     <label for="isbn">ISBN</label>
   </div>
   <div class="form-floating mb-3">
-    <input type="text" class="form-control" name="authors" id="authors" {% if book %} value="{{book.authors}}" {% endif %}>
+    <input type="text" class="form-control" name="authors" id="authors" {% if book %} value="{{book.authors}}" {% endif %} required>
     <label for="authors">Authors</label>
   </div>
   <div class="form-floating mb-3">
-    <input type="text" class="form-control" name="publisher" id="publisher" {% if book %} value="{{book.publisher}}" {% endif %}>
+    <input type="text" class="form-control" name="publisher" id="publisher" {% if book %} value="{{book.publisher}}" {% endif %} required>
     <label for="publisher">Publisher</label>
     <!-- placeholder="Authors of the book, seperated by '/'" -->
   </div>
   <div class="form-floating mb-3">
-    <input type="number" class="form-control" name="num_pages" id="num_pages" {% if book %} value="{{book.num_pages}}" {% endif %}>
+    <input type="number" class="form-control" name="num_pages" id="num_pages" {% if book %} value="{{book.num_pages}}" {% endif %} required>
     <label for="num_pages">Total Pages</label>
   </div>
   <div class="form-floating mb-3">
-    <input type="number" class="form-control" name="total_copies" id="total_copies" {% if book %} value="{{book.total_copies}}" {% endif %}>
+    <input type="number" class="form-control" name="total_copies" id="total_copies" {% if book %} value="{{book.total_copies}}" {% endif %} required>
     <label for="total_copies">Total Copies</label>
   </div>
   <div class="input-group mb-3">
-    <input type="file" class="form-control" name="cover_image" id="cover_image">
+    <input type="file" class="form-control" name="cover_image" id="cover_image" required>
   </div>
 
   <button id="submit-book" type="submit" class="btn btn-primary w-25">Submit</button>
