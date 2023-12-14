@@ -6,8 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "80:8000"
     environment:
       - DB_URI=postgresql://postgres:postgres@db:5432/postgres
       - JWT_SECRET_KEY=SECRET
@@ -17,6 +15,12 @@ services:
       - media-data:/app/src/static/media
     depends_on:
       - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cookieless_server.rule=Host(`libgaurd.camartya.xyz`)"
+      - "traefik.http.routers.cookieless_server.entrypoints=websecure"
+      - "traefik.http.routers.cookieless_server.tls.certresolver=myresolver"
+      - "traefik.http.services.cookieless_server.loadbalancer.server.port=8000"
   db:
     image: postgres
     ports:
@@ -27,16 +31,28 @@ services:
       - POSTGRES_DB=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
-#  nginx:
-#    build:
-#      context: ./nginx
-#      dockerfile: Dockerfile
-#    volumes:
-#      - media-data:/app/src/static/media
-#    ports:
-#      - "8000:80"
-#    depends_on:
-#      - web
+  traefik:
+      image: "traefik:v2.10"
+      container_name: "traefik"
+      command:
+        #- "--log.level=DEBUG"
+        - "--api.insecure=true"
+        - "--providers.docker=true"
+        - "--providers.docker.exposedbydefault=false"
+        - "--entrypoints.web.address=:80"
+        - "--entrypoints.websecure.address=:443"
+        - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+        - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+        #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+        - "--certificatesresolvers.myresolver.acme.email=testabc@gmail.com"
+        - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      ports:
+        - "80:80"
+        - "443:443"
+        - "8080:8080"
+      volumes:
+        - "./letsencrypt:/letsencrypt"
+        - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
 volumes:
   pgdata:
