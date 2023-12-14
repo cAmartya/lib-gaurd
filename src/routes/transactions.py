@@ -42,17 +42,23 @@ def issue_transaction():
       return make_response(jsonify({"message": "Missing Fields"}), 500)
     transaction = Transaction(id=None, member_id=member_id, book_id=book_id, count=count, issue_date=issue_date, return_date=None, issued_by=user.name)
 
-    if Transaction.issue_book(transaction):
+    transaction_state = Transaction.issue_book(transaction)
+    print(transaction_state)
+    if transaction_state == "ALLOWED":
       db.session.add(transaction)
       db.session.commit()
       flash("Book Issued", "success")
-    else:
+    elif transaction_state == "COUNT_EXCEED":
       flash("Number of copies of book to be issued exceeds available count", "warning")
+    elif transaction_state == "DEBT_EXCEED":
+      flash("Member has exceeded his debt limit", "warning")
+    else:
+      flash("Transaction broke. Internal Server Error.", "danger")
   except IntegrityError:
     flash("Transaction already exists", "warning")
   except Exception as e:
     print(e)
-    return make_response(jsonify({"message": "Internal srver error"}), 500)
+    return make_response(jsonify({"message": "Internal server error"}), 500)
   finally:
     return redirect("/transactions")
 
@@ -65,6 +71,7 @@ def return_transaction(id):
       flash("Book succesfully returned", "success")
       return redirect("/transactions")
     else:
+      flash("Transaction broke. Internal Server Error.", "danger")
       return make_response(jsonify({"message": "book return failed"}))
 
   except Exception as e:

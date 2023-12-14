@@ -68,6 +68,18 @@ def get_member(id):
   except Exception as e:
     print(e)
     return make_response(jsonify({"message": "Internal server error"}), 500)
-
   pass
+
+@app.get("/members/repay/<int:id>")
+@auth_required
+def repay_debt(id):
+  try:
+    member = Member.query.get(id)
+    member.debt = 0
+    db.session.commit()
+    flash("Member repaid debt", "success")
+  except Exception as e:
+    print(e)
+  finally:
+    return redirect("/members")
 

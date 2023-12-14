@@ -13,7 +13,7 @@
 - Issue / Return books
 
 ### Live Demo
-Check out the live demo here - 
+Check out the live website: https://libgaurd.camartya.xyz
 
 *Test Credentials*
  - *Username*: `test`

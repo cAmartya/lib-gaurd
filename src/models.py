@@ -79,14 +79,16 @@ class Member(db.Model):
     address = db.Column(db.String(200), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    debt = db.Column(db.Float, nullable=True, default=0)
     transactions = db.relationship("Transaction", backref="member", cascade="all, delete")
 
-    def __init__(self, id, name, address, phone, email):
+    def __init__(self, id, name, address, phone, email, debt=0):
         self.id = id
         self.name = name
         self.address = address
         self.phone = phone
         self.email = email
+        self.debt = debt
 
     def __repr__(self):
         return f"<Member {self.id}>"
@@ -98,6 +100,7 @@ class Member(db.Model):
             "address": self.address,
             "phone": self.phone,
             "email": self.email,
+            "debt": self.debt,
         }
 
 
@@ -109,10 +112,10 @@ class Transaction(db.Model):
     issue_date = db.Column(db.Date, nullable=False)
     is_returned = db.Column(db.Boolean, nullable=False, default=False)
     return_date = db.Column(db.Date, nullable=True)
-    charges_paid = db.Column(db.Float, nullable=True, default=0)
+    charges_due = db.Column(db.Float, nullable=True, default=0)
     issued_by = db.Column(db.String(60), nullable=False)
 
-    def __init__(self, id, member_id, book_id, count, issue_date, return_date, issued_by, charges_paid=0, is_returned=False):
+    def __init__(self, id, member_id, book_id, count, issue_date, return_date, issued_by, charges_due=0, is_returned=False):
         self.id = id
         self.member_id = member_id
         self.book_id = book_id
@@ -120,7 +123,7 @@ class Transaction(db.Model):
         self.issue_date = issue_date
         self.return_date = return_date
         self.is_returned = is_returned
-        self.charges_paid = charges_paid
+        self.charges_due = charges_due
         self.issued_by = issued_by
 
     def __repr__(self):
@@ -136,13 +139,13 @@ class Transaction(db.Model):
             "issue_date": self.issue_date,
             "return_date": self.return_date,
             "is_returned": self.is_returned,
-            "charges_paid": self.charges_paid,
+            "charges_due": self.charges_due,
             "issued_by": self.issued_by,
         }
 
     def calculate_charges(self):
         if self.is_returned:
-            return self.charges_paid
+            return self.charges_due
 
         # Calculate no of days from issue date to current date
         days = (datetime.now().date() - self.issue_date).days
@@ -153,26 +156,31 @@ class Transaction(db.Model):
 
         return charges
 
-    def issue_book(self) -> bool:
+    def issue_book(self) -> str:
         try:
+            member = Member.query.get(self.member_id)
+            if member.debt >= app.config["MEMBER_DEBT_LIMIT"]:
+                return "DEBT_EXCEED"
             book = Book.query.get(self.book_id)
             if book.available_copies >= int(self.count):
                 book.available_copies -= int(self.count)
                 db.session.commit()
-                return True
-            return False
+                return "ALLOWED"
+            return "COUNT_EXCEED"
         except Exception as e:
             print(e)
-            return False
+            return "ERROR"
 
     def return_book(self) -> bool:
         try:
             if self.is_returned:
                 return True
             self.return_date = datetime.now().date()
-            self.charges_paid = self.calculate_charges()
+            self.charges_due = self.calculate_charges()
             book = Book.query.get(self.book_id)
             book.available_copies += int(self.count)
+            member = Member.query.get(self.member_id)
+            member.debt += self.charges_due
             self.is_returned = True
             db.session.commit()
             return True

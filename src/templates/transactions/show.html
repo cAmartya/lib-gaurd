@@ -38,7 +38,7 @@
           { data: 'book_id' },
           { data: 'member_name' },
           { data: 'count' },
-          { data: 'charges_paid',
+          { data: 'charges_due',
             render: function (data, type) {
               const val = data.toFixed(2);
               return type === "display" ? `Rs ${val}` : val;
