@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  web:
+    container_name: libgaurd-v1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_URI=postgresql://postgres:postgres@db:5432/postgres
+      - JWT_SECRET_KEY=SECRET
+      - FLASK_SECRET_KEY=APP
+      - PORT=8000
+    volumes:
+      - media-data:/app/src/static/media
+    depends_on:
+      - db
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+  media-data:
