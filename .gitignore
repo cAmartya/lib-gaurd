@@ -4,3 +4,4 @@
 *.env
 /src/static/media/*
 .idea*
+nginx
